@@ -47,3 +47,6 @@ void lcd_data_set_byte(struct sk_lcd *lcd, uint8_t byte);
 void lcd_rsrw_set(struct sk_lcd *lcd, bool rs, bool rw);
 void lcd_send_byte(struct sk_lcd *lcd, bool rs, uint8_t byte);
 void lcd_send_string(struct sk_lcd *lcd, const uint8_t *str);
+void lcd_send_cmd(struct sk_lcd *lcd, uint8_t byte);
+void lcd_send_data(struct sk_lcd *lcd, uint8_t byte);
+void lcd_add_symbol(struct sk_lcd *lcd, uint8_t position, uint8_t *symbol);
