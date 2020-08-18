@@ -102,12 +102,48 @@ void lcd_rsrw_set(struct sk_lcd *lcd, bool rs, bool rw)
 	sk_pin_set(*lcd->pin_rs, rs);
 	sk_pin_set(*lcd->pin_rw, rw);
 }
+void lcd_send_cmd(struct sk_lcd *lcd, uint8_t byte)
+{
+	lcd_rsrw_set(lcd, 0, 0);
+	lcd_data_set_halfbyte(lcd, byte >> 4);
+	lcd_data_set_halfbyte(lcd, byte & 0x0F);
+}
+
+void lcd_send_data(struct sk_lcd *lcd, uint8_t byte)
+{
+	lcd_rsrw_set(lcd, 1, 0);
+	lcd_data_set_halfbyte(lcd, byte >> 4);
+	lcd_data_set_halfbyte(lcd, byte & 0x0F);
+}
 
 
 void lcd_send_byte(struct sk_lcd *lcd, bool rs, uint8_t byte)
 {
 	lcd_rsrw_set(lcd, rs, true);
 	lcd_data_set_byte(lcd, byte);
+}
+void lcd_add_symbol(struct sk_lcd *lcd, uint8_t position, uint8_t *symbol)
+{
+	if (position < 8){
+		lcd_send_cmd(lcd, 0x40 + (8 * position));
+		for(uint8_t i = 0; i < 8; i++){
+			lcd_send_data(lcd, symbol[i]);
+		}
+	}
+	lcd_send_cmd(lcd, 0x80);
+	/*lcd_send_cmd(lcd, 0b11000000);
+	lcd_send_data(lcd, position);
+	lcd_delay_us(lcd, 250000);*/
+
+	
+	/*lcd_send_data(&lcd, 0xe);
+	lcd_send_data(&lcd, 0x11);
+	lcd_send_data(&lcd, 0x10);
+	lcd_send_data(&lcd, 0x1e);
+	lcd_send_data(&lcd, 0x10);
+	lcd_send_data(&lcd, 0x11);
+	lcd_send_data(&lcd, 0xe);
+	lcd_send_data(&lcd, 0x0);*/
 }
 
 
