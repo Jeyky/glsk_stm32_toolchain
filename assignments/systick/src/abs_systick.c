@@ -12,8 +12,6 @@
 
 volatile uint32_t __nticks = 0;
 
-const uint32_t TICK_RATE_HZ = 10000ul;
-
 inline __attribute__ ((always_inline)) void __WFI(void)
 {
 	__asm__ volatile ("wfi");
@@ -24,27 +22,42 @@ inline uint32_t get_current_tick(void)
 	return __nticks;
 }
 
-void sys_tick_init(void)
+inline void set_current_tick(uint32_t tick)
 {
-	//sk_pin_set(sk_io_led_green, true);
+	__nticks = tick;
+}
+
+bool sys_tick_init(uint32_t period, uint8_t irq_priority)
+{
+	if(0 == period)
+		return false;
+
+	//in case user wants to reconfigure systick
 	systick_counter_disable();
 
-	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
+	if (!(period % 8)) {
+		period /= 8;
+		systick_set_clocksource(STK_CSR_CLKSOURCE_AHB_DIV8);
+	} else {
+		systick_set_clocksource(STK_CSR_CLKSOURCE_AHB);
+	}
 
 	systick_interrupt_enable();	 
-	//10 kHz  = 16 000 000 / 1600 = (100 us)
-	uint32_t period = 16000000ul/10000ul;
+
+	// set STK_RVR
 	systick_set_reload(period);
 
-	
+	//STK_CVR holds the current value of the counter
 	STK_CVR = period;
 
-	nvic_set_priority(NVIC_SYSTICK_IRQ, 2);
+	nvic_set_priority(NVIC_SYSTICK_IRQ, irq_priority);
 	nvic_enable_irq(NVIC_SYSTICK_IRQ);
 
-	__nticks = 0;
+	set_current_tick(0);
 
 	systick_counter_enable();
+
+	return true;
 }
 
 void sys_tick_handler(void)
@@ -52,28 +65,54 @@ void sys_tick_handler(void)
 	__nticks++;
 }
 
-static void delay_ms_systick(uint32_t ms)
+uint32_t get_tick_rate(void)
 {
-	uint32_t delta = (TICK_RATE_HZ/1000)*ms;
-	uint32_t next = get_current_tick() + delta;	
-	while(get_current_tick() <= next){
-		__WFI();
+	uint32_t tick_rate = rcc_ahb_frequency / systick_get_reload();
+
+	// AHB/8 = 0
+	// system clock speed (AHB) = 1
+	if (!(STK_CSR & STK_CSR_CLKSOURCE)) {
+
+		tick_rate /=8;
+	}
+
+	return tick_rate;
+}
+
+// maximum ms value depends on period parameter set by user 
+void delay_ms_systick(uint32_t ms)
+{
+	uint32_t current = get_current_tick();
+	uint32_t tick_rate = get_tick_rate();
+
+	uint32_t delta = (tick_rate/1000)*ms;
+	uint32_t next = get_current_tick() + delta;
+
+	// overflow precautions
+	if (next < current) {	
+		while (get_current_tick() > next)
+			__WFI();
+	} else {			
+		while (get_current_tick() <= next)
+			__WFI();
 	}
 }
 
+
 int main(void)
 {
+	
 	rcc_periph_clock_enable(RCC_GPIOD);
 
 	glsk_pins_init(true);
 	sk_pin_set(sk_io_led_red, true);
 
-	sys_tick_init();
+	sys_tick_init(16000000ul/1000ul, 2);
 	cm_enable_interrupts();
 
 	while(1){
 		sk_pin_toggle(sk_io_led_red);
-		delay_ms_systick(500);
+		delay_ms_systick(100);
 	}
 
 }
