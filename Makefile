@@ -1,9 +1,9 @@
 # The main (project top) file without .c
-TARGET = lcdtest
+TARGET = pwm
 # All source files go here:
 SRCS = $(TARGET).c
 # other sources added like that
-SRCS += pin.c tick.c lcd_hd44780.c
+SRCS += abs_systick.c clkset.c pin.c
 # User defines
 DEFINES = GLSK_BOARD=1
 # The libs which are linked to the resulting target

@@ -1,6 +1,8 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <stdint.h>
+#include "abs_systick.h"
+#include "clkset.h"
 
 /**
  * Simple illustrative softdelay (inefficient though)
@@ -15,24 +17,24 @@
  * in that case, softdelays are fine-tuned against CPU frequency and other stuff for fine-grained
  * and more deterministic delay times.
  */
-void softdelay(volatile uint32_t N)
+/*void softdelay(volatile uint32_t N)
 {
     while (N--);
     // or: while (N--) __asm__("nop");
-}
-
+}*/
 
 int main(void)
 {
+    clock_hse_init(4, 168, 2, 7, 0);
     rcc_periph_clock_enable(RCC_GPIOD);
-    gpio_mode_setup(GPIOD, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO12);
-    gpio_set(GPIOD, GPIO12);
+    abs_sys_tick_init(168000000ul/100000ul, 2);
+    gpio_mode_setup(GPIOD, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO12 | GPIO13 | GPIO14 | GPIO15);
+    gpio_set(GPIOD, GPIO12 | GPIO13 | GPIO14 | GPIO15);
     while (1) {
-        gpio_clear(GPIOD, GPIO12);
-        softdelay(400000);
-        gpio_set(GPIOD, GPIO12);
-        softdelay(400000);
-
+        gpio_clear(GPIOD, GPIO12 | GPIO13 | GPIO14 | GPIO15);
+        abs_delay_ms(1000);
+        gpio_set(GPIOD, GPIO12 | GPIO13 | GPIO14 | GPIO15);
+        abs_delay_ms(1000);
         // or:
         //     gpio_toggle(GPIOD, GPIO12);
         //     softdelay(800000);

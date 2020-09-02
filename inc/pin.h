@@ -180,6 +180,37 @@ void sk_pin_group_set(sk_pin_group group, uint16_t values);
  */
 void sk_pin_group_toggle(sk_pin_group group, uint16_t values);
 
+/**
+ * Set pins mode
+ * @pin: pin number (:c:type:`sk_pin`)
+ * @mode: set mode(input, output, analog, AF)
+ *
+ * Note:
+ * Access to the corresponding GPIO registers is not atomic.
+ */
+void sk_pin_mode_setup(sk_pin pin, uint8_t mode, uint8_t pull_up_down);
+
+/**
+ * Set GPIO Alternate Function Selection.
+ * @pin: pin structure (:c:type:`sk_pin`)
+ * @alt_func_num: pin alternate function number
+ *
+ * Note:
+ * Access to the corresponding GPIO registers is not atomic.
+ */
+void sk_pin_set_af(sk_pin pin, uint8_t alt_func_num);
+
+/**
+ * Set GPIO Output Options. 
+ * @pin: pin structure (:c:type:`sk_pin`)
+ * @otype: pin output type
+ * @speed: pin speed
+ *
+ * Note:
+ * Access to the corresponding GPIO registers is not atomic.
+ */
+void sk_pin_set_output_options(sk_pin pin, uint8_t otype, uint8_t speed);
+
 
 #if SK_USE_GLSK_DEFINITIONS
 // some STM32F4DISCOVERY pins

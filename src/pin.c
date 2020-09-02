@@ -95,6 +95,23 @@ void sk_pin_group_toggle(sk_pin_group group, uint16_t values)
 }
 
 
+void sk_pin_mode_setup(sk_pin pin, uint8_t mode, uint8_t pull_up_down)
+{
+	gpio_mode_setup(sk_pin_port_to_gpio(pin.port), mode, pull_up_down, (1 << pin.pin));
+}
+
+
+void sk_pin_set_af(sk_pin pin, uint8_t alt_func_num)
+{
+	gpio_set_af(sk_pin_port_to_gpio(pin.port), alt_func_num, (1 << pin.pin));
+}
+void sk_pin_set_output_options(sk_pin pin, uint8_t otype, uint8_t speed)
+{
+	gpio_set_output_options(sk_pin_port_to_gpio(pin.port), otype, speed, (1 << pin.pin));
+}
+
+
+
 #if defined(SK_USE_GLSK_DEFINITIONS) && SK_USE_GLSK_DEFINITIONS
 // some STM32F4DISCOVERY pins
 const sk_pin sk_io_led_orange = { .port=SK_PORTD, .pin=13, .isinverse=false };

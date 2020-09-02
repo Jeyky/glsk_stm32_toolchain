@@ -1,5 +1,6 @@
 #include "lcd_hd44780.h"
-#include "tick.h"
+//#include "tick.h"
+#include "abs_systick.h"
 #include <libopencm3/cm3/cortex.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
@@ -26,8 +27,8 @@ int main(void)
 	glsk_pins_init(true);
 	sk_pin_group_set(sk_io_lcd_data, 0x00);
 	sk_pin_set(sk_io_led_orange, true);
-
-	sk_tick_init(16000000ul / 10000ul, 2);
+	abs_sys_tick_init(16000000ul / 10000ul, 2);
+	//sk_tick_init(16000000ul / 10000ul, 2);
 	cm_enable_interrupts();
 
 	struct sk_lcd lcd = {
@@ -38,7 +39,7 @@ int main(void)
 		.pin_bkl = &sk_io_lcd_bkl,
 		//.set_backlight_func = &test_bkl_func,
 		.delay_func_us = NULL,
-		.delay_func_ms = &sk_tick_delay_ms,
+		.delay_func_ms = &abs_delay_ms,
 		.is4bitinterface = true
 	};
 
@@ -75,16 +76,22 @@ int main(void)
 	lcd_send_data(&lcd, g);
 	lcd_send_data(&lcd, e);
 	lcd_send_data(&lcd, yi);
+	lcd_send_string(&lcd, "slava!");
+	lcd_send_cmd(&lcd, 0xc0);
+	lcd_send_string(&lcd, "ukraine");
+	lcd_set_cursor(&lcd, 1, 0);
 
     while (1) {
 		// dumb code for logic analyzer to test levels
 		sk_pin_set(sk_io_led_orange, false);
 		
 		
-		sk_tick_delay_ms(500);
+		abs_delay_ms(750);
 		sk_pin_set(sk_io_led_orange, true);
 		//lcd_send_byte(&lcd, true, 0b11111111);
-		sk_tick_delay_ms(500);
+		abs_delay_ms(750);
+    		
+		
 		//lcd_send_byte(&lcd, true, 0b10110100);
 
     }
