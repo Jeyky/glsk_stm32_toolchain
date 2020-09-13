@@ -1,18 +1,8 @@
-#include "lcd_hd44780.h"
 #include <libopencm3/cm3/cortex.h>
 #include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/gpio.h>
-#include <libopencm3/cm3/nvic.h>
-#include <libopencm3/cm3/scb.h>
-#include <libopencm3/stm32/exti.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
 #include "timer_delay.h"
-#include "clkset.h"
-#include "stdio.h"
-#include <stddef.h>
-#include "printf.h"
+#include "pin.h"
+#include "dht11.h"
 
 const sk_pin dht11 	= {.port = SK_PORTD, .pin = 11, .isinverse = false};
 
@@ -89,7 +79,7 @@ uint8_t dht11_read_humidity(void)
 
 	return humidity;
 }
-
+/*
 int main(void) 
 {
 
@@ -123,55 +113,25 @@ int main(void)
 	sk_lcd_set_backlight(&lcd, 0xFF);
 	
 	lcd_init_4bit(&lcd);
-	//dht11_start();
-	//if(dht11_response())
-	//	sk_pin_set(sk_io_led_red, 1);
+
 	uint8_t rh_integr, rh, temp_integ, temp, check_sum;
-	/*rh_integr = dht11_read_byte();
-	rh = dht11_read_byte();
-	temp_integ = dht11_read_byte();
-	temp = dht11_read_byte();
-	check_sum = dht11_read_byte();*/
 
 	char temp_buffer[20];
 	char hum_buffer[20];
 
-	
-	/*sk_pin_toggle(sk_io_led_blue);
-	rh_integr = dht11_read_byte();
-	dht11_read_byte();
-	temp_integ = dht11_read_byte();
-	dht11_read_byte();
-	dht11_read_byte();
-
-	snprintf(temp_buffer, sk_arr_len(temp_buffer), "temp=%u", (uint8_t)temp_integ);
-	lcd_set_cursor(&lcd, 0, 0);
-	lcd_send_string(&lcd, temp_buffer);
-
-	snprintf(hum_buffer, sk_arr_len(hum_buffer), "t=%u", (uint8_t)rh_integr);
+	temp_integ = dht11_read_temprature();
+	snprintf(temp_buffer, sk_arr_len(temp_buffer), "temp=%u", temp_integ);
 	lcd_set_cursor(&lcd, 1, 0);
-	lcd_send_string(&lcd, hum_buffer);	*/
-
-	temp_integ = dht11_read_hum();
-	snprintf(temp_buffer, sk_arr_len(temp_buffer), "hum=%u", temp_integ);
-	lcd_set_cursor(&lcd, 0, 0);
 	lcd_send_string(&lcd, temp_buffer);
 	
-/*
-	snprintf(buffer, sk_arr_len(buffer), "hum=%u", (uint8_t)rh_integr);
-	lcd_set_cursor(&lcd, 0, 0);
-	lcd_send_string(&lcd, buffer);
-	snprintf(buffer, sk_arr_len(buffer), "t=%u", (uint8_t)temp_integ);
-	lcd_set_cursor(&lcd, 1, 0);
-	lcd_send_string(&lcd, buffer);
-*/
+
 	while(1) {
 		delay_ms(1500);
 		sk_pin_toggle(sk_io_led_orange);
-		temp_integ = dht11_read_hum();
+		temp_integ = dht11_read_humidity();
 		snprintf(temp_buffer, sk_arr_len(temp_buffer), "hum=%u", temp_integ);
 		lcd_set_cursor(&lcd, 0, 0);
 		lcd_send_string(&lcd, temp_buffer);
 
 	}
-}
+}*/
