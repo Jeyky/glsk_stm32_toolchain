@@ -2,198 +2,181 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/timer.h>
 #include <libopencm3/cm3/nvic.h>
-#include "abs_systick.h"
+#include <libopencm3/cm3/cortex.h>
+#include <libopencm3/cm3/scb.h>
+#include <libopencm3/stm32/exti.h>
 #include "pin.h"
-#include "clkset.h"
+#include "pwm.h"
 
+const sk_pin servo  		= {.port = SK_PORTA, .pin = 6, .isinverse = false};
+const sk_pin speedometer 	= {.port = SK_PORTE, .pin = 5, .isinverse = false};
+const sk_pin alarm 			= {.port = SK_PORTA, .pin = 1, .isinverse = false};
+
+const sk_pin btn_right 	= {.port = SK_PORTC, .pin = 11, .isinverse = true};
+const sk_pin btn_middle = {.port = SK_PORTA, .pin = 15, .isinverse = true};
+
+bool show_on_speedometer = true;
+
+void button_init(void)
+{
+	rcc_periph_clock_enable(RCC_GPIOA);
+	rcc_periph_clock_enable(RCC_GPIOC);
+
+	sk_pin_mode_setup(btn_right, 	GPIO_MODE_INPUT, GPIO_PUPD_PULLUP);
+	sk_pin_mode_setup(btn_middle,	GPIO_MODE_INPUT, GPIO_PUPD_PULLUP);
+
+	scb_set_priority_grouping(SCB_AIRCR_PRIGROUP_GROUP4_SUB4);
+
+	const uint8_t group = 2;
+	const uint8_t subgroup = 0;
+
+	nvic_set_priority(NVIC_EXTI9_5_IRQ, (group << 2) | subgroup);
+	nvic_set_priority(NVIC_EXTI15_10_IRQ, ((1 + group) << 2) | subgroup);
+
+	rcc_periph_clock_enable(RCC_SYSCFG);
+
+	sk_inter_exti_init(btn_right, EXTI_TRIGGER_FALLING);
+	sk_inter_exti_init(btn_middle, EXTI_TRIGGER_FALLING);
+
+	nvic_enable_irq(NVIC_EXTI15_10_IRQ);
+
+	cm_enable_interrupts();
+}
+void exti15_10_isr(void)
+{
+	if (sk_pin_read(btn_middle)) {
+		show_on_speedometer = !show_on_speedometer;
+		exti_reset_request((1 << btn_middle.pin));
+	}
+	if (sk_pin_read(btn_right)) {
+		show_on_speedometer = !show_on_speedometer;
+		exti_reset_request((1 << btn_right.pin));		
+	}
+		
+}
 void pwm_init(void)
 {
-	rcc_periph_clock_enable(RCC_TIM4);
-	rcc_periph_clock_enable(RCC_TIM3);
-	rcc_periph_clock_enable(RCC_TIM1);
+	
+	rcc_periph_clock_enable(RCC_TIM3);	// tim3 84mhz 16bit
+	rcc_periph_clock_enable(RCC_TIM9); 	// tim9 168mhz 16 bit
+	rcc_periph_clock_enable(RCC_TIM5);
 
 
-	timer_set_mode(TIM4, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
-	timer_set_mode(TIM3, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
-	timer_set_mode(TIM1, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
 
-	timer_set_prescaler(TIM4, 999);
+	timer_set_mode(TIM3, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);	// timer 3 responds for servo motor
+	timer_set_mode(TIM9, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP); // timer 9 responds for speedometer
+	timer_set_mode(TIM5, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP); // timer 5 responds for alarm
+
+	
 	timer_set_prescaler(TIM3, 467 - 1);
-	timer_set_prescaler(TIM1, 999)
+	timer_set_prescaler(TIM9, 1000 -1);
+	timer_set_prescaler(TIM5, 84 - 1);
 
-	timer_enable_preload(TIM4);
-	timer_continuous_mode(TIM4);
 
 	timer_enable_preload(TIM3);
 	timer_continuous_mode(TIM3);
 
-	timer_enable_preload(TIM1);
-	timer_continuous_mode(TIM1)
+	timer_enable_preload(TIM9);
+	timer_continuous_mode(TIM9);
 
-	timer_set_repetition_counter(TIM4, 0);
+	timer_enable_preload(TIM5);
+	timer_continuous_mode(TIM5);
+
 	timer_set_repetition_counter(TIM3, 0);
-	timer_set_repetition_counter(TIM1, 0);
+	timer_set_repetition_counter(TIM9, 0);
+	timer_set_repetition_counter(TIM5, 0);
 
-	timer_set_period(TIM4, 99);
 	timer_set_period(TIM3, 3600 - 1);
-	timer_set_period(TIM1, 2000 - 1);
-
-	
-
-	timer_disable_oc_output(TIM4, TIM_OC1);
-	timer_disable_oc_output(TIM4, TIM_OC2);
-	timer_disable_oc_output(TIM4, TIM_OC3);
-	timer_disable_oc_output(TIM4, TIM_OC4);
+	timer_set_period(TIM9, 2000 - 1);
+	timer_set_period(TIM5, 100 - 1);
 
 	timer_disable_oc_output(TIM3, TIM_OC1);
+	timer_disable_oc_output(TIM9, TIM_OC1);
+	timer_disable_oc_output(TIM5, TIM_OC2);
 
-	timer_disable_oc_output(TIM1, TIM_OC1);
-
-	timer_set_oc_mode(TIM4, TIM_OC1, TIM_OCM_PWM1);
-	timer_set_oc_mode(TIM4, TIM_OC2, TIM_OCM_PWM1);
-	timer_set_oc_mode(TIM4, TIM_OC3, TIM_OCM_PWM1);
-	timer_set_oc_mode(TIM4, TIM_OC4, TIM_OCM_PWM1);
 
 	timer_set_oc_mode(TIM3, TIM_OC1, TIM_OCM_PWM1);
-
-	timer_set_oc_mode(TIM1, TIM_OC1, TIM_OCM_PWM1);
-
-
-	timer_enable_oc_preload(TIM4, TIM_OC1);
-	timer_enable_oc_preload(TIM4, TIM_OC2);
-	timer_enable_oc_preload(TIM4, TIM_OC3);
+	timer_set_oc_mode(TIM9, TIM_OC1, TIM_OCM_PWM1);
+	timer_set_oc_mode(TIM5, TIM_OC2, TIM_OCM_PWM1);
 
 	timer_enable_oc_preload(TIM3, TIM_OC1);
+	timer_enable_oc_preload(TIM9, TIM_OC1);
+	timer_enable_oc_preload(TIM5, TIM_OC2);
 
-	timer_enable_oc_preload(TIM1, TIM_OC1);
-
-	timer_set_oc_value(TIM4, TIM_OC1, 0);
-	timer_set_oc_value(TIM4, TIM_OC2, 0);
-	timer_set_oc_value(TIM4, TIM_OC3, 0);
-	timer_set_oc_value(TIM4, TIM_OC4, 0);
 
 	timer_set_oc_value(TIM3, TIM_OC1, 0);
-
-	timer_set_oc_value(TIM1, TIM_OC1, 1000);
-
-	timer_enable_oc_output(TIM4, TIM_OC1);
-	timer_enable_oc_output(TIM4, TIM_OC2);
-	timer_enable_oc_output(TIM4, TIM_OC3);
-	timer_enable_oc_output(TIM4, TIM_OC4);
+	timer_set_oc_value(TIM9, TIM_OC1, 1500);
+	timer_set_oc_value(TIM5, TIM_OC2, 0);
 
 	timer_enable_oc_output(TIM3, TIM_OC1);
-
-	timer_enable_oc_output(TIM1, TIM_OC1);
-
-	timer_generate_event(TIM4, TIM_EGR_UG);
+	timer_enable_oc_output(TIM9, TIM_OC1);
+	timer_enable_oc_output(TIM5, TIM_OC2);
 
 	timer_generate_event(TIM3, TIM_EGR_UG);
-
-	timer_generate_event(TIM1, TIM_EGR_UG);
-
-	timer_enable_counter(TIM4);
+	timer_generate_event(TIM9, TIM_EGR_UG);
+	timer_generate_event(TIM5, TIM_EGR_UG);
 
 	timer_enable_counter(TIM3);
-
-	timer_enable_counter(TIM1);
+	timer_enable_counter(TIM9);
+	timer_enable_counter(TIM5);
 }
 
-const sk_pin sk_led_orange = { .port=SK_PORTD, .pin=13, .isinverse=false };
-const sk_pin sk_led_red    = { .port=SK_PORTD, .pin=14, .isinverse=false };
-const sk_pin sk_led_green  = { .port=SK_PORTD, .pin=12, .isinverse=false };
-const sk_pin sk_led_blue   = { .port=SK_PORTD, .pin=15, .isinverse=false };
+void alarm_init(void)
+{
+	rcc_periph_clock_enable(RCC_GPIOA);
 
-const sk_pin shim  = { .port=SK_PORTA, .pin=6, .isinverse=false };
+	sk_pin_mode_setup(alarm, GPIO_MODE_AF, GPIO_PUPD_NONE);
 
+	sk_pin_set_output_options(alarm, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ);
 
-void set_speed(uint16_t value)
+	sk_pin_set_af(alarm, GPIO_AF2);
+}
+
+void alarm_on(void)
+{
+	timer_set_oc_value(TIM5, TIM_OC2, 40);
+}
+
+void alarm_off(void)
+{
+	timer_set_oc_value(TIM5, TIM_OC2, 0);
+}
+
+void servo_init(void)
+{
+	rcc_periph_clock_enable(RCC_GPIOA);
+
+	sk_pin_mode_setup(servo, GPIO_MODE_AF, GPIO_PUPD_NONE);
+
+	sk_pin_set_output_options(servo, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ);
+
+	sk_pin_set_af(servo, GPIO_AF2);
+}
+
+void speedometer_init(void)
+{
+	rcc_periph_clock_enable(RCC_GPIOE);
+
+	sk_pin_mode_setup(speedometer, GPIO_MODE_AF, GPIO_PUPD_NONE);
+
+	sk_pin_set_output_options(speedometer, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ);
+
+	sk_pin_set_af(speedometer, GPIO_AF3);
+
+}
+
+void speedometer_set_speed(uint16_t value)
 {
 	uint16_t prescaler = 84000/(6.7*value);
-	prescaler = 84000/prescaler;
-	timer_set_prescaler(TIM1, prescaler - 1);
-	timer_generate_event(TIM1, TIM_EGR_UG);
-	timer_enable_counter(TIM1);
+	timer_set_prescaler(TIM9, prescaler - 1);
+	timer_generate_event(TIM9, TIM_EGR_UG);
+	__dmb();
+	timer_enable_counter(TIM9);
 }
 
-void rotate_servo(uint16_t deg)
+void servo_rotate(uint16_t deg)
 {
 	uint16_t position = 100 + deg*2;
 	timer_set_oc_value(TIM3, TIM_OC1, position);
 }
 
-int main(void)
-{
-	rcc_periph_clock_enable(RCC_GPIOD);
-	rcc_periph_clock_enable(RCC_GPIOA);
-	//gpio_mode_setup(GPIOD, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO12 | GPIO13 | GPIO14 | GPIO15);
-	sk_pin_mode_setup(sk_led_orange, GPIO_MODE_AF, GPIO_PUPD_NONE);
-	sk_pin_mode_setup(sk_led_red, GPIO_MODE_AF, GPIO_PUPD_NONE);
-	sk_pin_mode_setup(sk_led_green, GPIO_MODE_AF, GPIO_PUPD_NONE);
-	sk_pin_mode_setup(sk_led_blue, GPIO_MODE_AF, GPIO_PUPD_NONE);
-
-	sk_pin_mode_setup(shim, GPIO_MODE_AF, GPIO_PUPD_NONE);
-
-	//gpio_set_output_options(GPIOD, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, GPIO12 | GPIO13 | GPIO14 | GPIO15);
-	sk_pin_set_output_options(sk_led_orange, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ);
-	sk_pin_set_output_options(sk_led_red, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ);
-	sk_pin_set_output_options(sk_led_green, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ);
-	sk_pin_set_output_options(sk_led_blue, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ);
-
-	sk_pin_set_output_options(shim, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ);
-	
-	//gpio_set_af(GPIOD, GPIO_AF2, GPIO12 | GPIO13 | GPIO14 | GPIO15);
- 	sk_pin_set_af(sk_led_orange, GPIO_AF2);
- 	sk_pin_set_af(sk_led_red, GPIO_AF2);
- 	sk_pin_set_af(sk_led_green, GPIO_AF2);
- 	sk_pin_set_af(sk_led_blue, GPIO_AF2);
-
- 	sk_pin_set_af(shim, GPIO_AF2);
-
-	clock_hse_init(4, 168, 2, 7, 0);
-	abs_sys_tick_init(168000000ul/100000ul, 2);
-	abs_delay_ms(2000);
-	pwm_init();
-
-	/*timer_set_oc_value(TIM3, TIM_OC1, 180);
-	timer_set_oc_value(TIM4, TIM_OC1, 99);
-	abs_delay_ms(2000);
-	timer_set_oc_value(TIM3, TIM_OC1, 270);
-	timer_set_oc_value(TIM4, TIM_OC2, 99);
-	abs_delay_ms(2000);
-	timer_set_oc_value(TIM3, TIM_OC1, 360);
-	timer_set_oc_value(TIM4, TIM_OC3, 99);*/
-	//timer_set_oc_value(TIM3, TIM_OC1, 20);
-	uint8_t a=4;
-	while(a--){
-		abs_delay_ms(500);
-		rotate_servo(180);
-		timer_set_oc_value(TIM4, TIM_OC3, 0);
-		abs_delay_ms(500);
-		timer_set_oc_value(TIM4, TIM_OC3, 99);
-		rotate_servo(0);
-	}
-	
-	/*
-	timer_set_oc_value(TIM3, TIM_OC1, 20);
-	abs_delay_ms(3000);
-	timer_set_oc_value(TIM3, TIM_OC1, 450);*/
-	while(1){
-		for(int duty = 0; duty <= 255; duty++){
-			abs_delay_ms(5);
-			timer_set_oc_value(TIM4, TIM_OC1, duty);
-			timer_set_oc_value(TIM4, TIM_OC2, duty);
-			timer_set_oc_value(TIM4, TIM_OC3, duty);
-			timer_set_oc_value(TIM4, TIM_OC4, duty);
-		}
-		for(int duty = 255; duty >= 0; duty--){
-			abs_delay_ms(5);
-			timer_set_oc_value(TIM4, TIM_OC1, duty);
-			timer_set_oc_value(TIM4, TIM_OC2, duty);
-			timer_set_oc_value(TIM4, TIM_OC3, duty);
-			timer_set_oc_value(TIM4, TIM_OC4, duty);
-		}
-	}
-
-
-
-}
