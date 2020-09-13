@@ -12,6 +12,8 @@
 /** Pointer to delay(uint32_t var) function defined as type */
 typedef void (*sk_delay_func_t)(uint32_t);
 
+extern uint8_t cursor_col;
+extern uint8_t cursor_row;
 
 struct sk_lcd {
 	/** HD44780 data pins (DB0..DB7 or DB4..DB7) represented as :c:type:`sk_pin_group` */
@@ -51,3 +53,7 @@ void lcd_send_cmd(struct sk_lcd *lcd, uint8_t byte);
 void lcd_send_data(struct sk_lcd *lcd, uint8_t byte);
 void lcd_add_symbol(struct sk_lcd *lcd, uint8_t position, uint8_t *symbol);
 void lcd_set_cursor(struct sk_lcd *lcd, uint8_t raw, uint8_t column);
+void lcd_init_4bit(struct sk_lcd *lcd);
+
+void lcd_increase_column_cursor(struct sk_lcd *lcd);
+void lcd_increase_row_cursor(struct sk_lcd *lcd);

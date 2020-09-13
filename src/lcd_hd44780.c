@@ -17,7 +17,8 @@ static const uint32_t DELAY_ENA_STROBE_US = 1;
 static const uint32_t DELAY_INIT0_US = 4100;
 static const uint32_t DELAY_INIT1_US = 100;
 		   
-
+uint8_t cursor_col = 0;
+uint8_t cursor_row = 0;
 
 sk_err sk_lcd_set_backlight(struct sk_lcd *lcd, uint8_t level)
 {
@@ -150,7 +151,7 @@ void lcd_init_4bit(struct sk_lcd *lcd)
 
 	// set display on/off: bit2 -- display on (D), bit1 -- cursor on (C), bit 0 -- blink on (B)
 	lcd_rsrw_set(lcd, 0, 0);
-	lcd_data_set_byte(lcd, 0b00001000 | 0b101);
+	lcd_data_set_byte(lcd, 0b00001000 | 0b100);
 	lcd_delay_us(lcd, DELAY_CONTROL_US);
 
 	// clear display
@@ -163,12 +164,14 @@ void lcd_init_4bit(struct sk_lcd *lcd)
 	lcd_data_set_byte(lcd, 0b00000100 | 0b10);
 	lcd_delay_us(lcd, DELAY_CLRRET_US);
 }
+
 void lcd_putchar(struct sk_lcd *lcd, const uint8_t sym)
 {
 	lcd_rsrw_set(lcd , true, false);
 	lcd_data_set_halfbyte(lcd, sym >> 4);
 	lcd_data_set_halfbyte(lcd, sym & 0x0F);
 }
+
 void lcd_send_string(struct sk_lcd *lcd, const uint8_t *str)
 {
 	uint8_t counter=0;
@@ -192,10 +195,38 @@ void lcd_send_string(struct sk_lcd *lcd, const uint8_t *str)
 		counter++;
 	}
 }
-void lcd_set_cursor(struct sk_lcd *lcd, uint8_t raw, uint8_t column)
+void lcd_set_cursor(struct sk_lcd *lcd, uint8_t row, uint8_t column)
 {
-	if (1 == raw)
+	if (0 == row)
 		lcd_send_cmd(lcd, 0x80 + column);
-	if (2 == raw)
+	else
 		lcd_send_cmd(lcd, 0xc0 + column);
+}
+/*
+void lcd_set_curs(struct sk_lcd *lcd, uint8_t row, uint8_t column)
+{
+	cursor_row = row;
+	cursor_col = column;
+	lcd_set_cursor(lcd, cursor_row, cursor_col);
+}*/
+
+void lcd_increase_column_cursor(struct sk_lcd *lcd)
+{
+	if (cursor_col < 16) {
+		cursor_col++;
+		lcd_set_cursor(lcd, cursor_row, cursor_col);
+	} else {
+		cursor_col = 0;
+		lcd_set_cursor(lcd, cursor_row, cursor_col);
+	}
+}
+void lcd_increase_row_cursor(struct sk_lcd *lcd)
+{
+	if (cursor_row == 0) {
+		cursor_row++;
+		lcd_set_cursor(lcd, cursor_row, cursor_col);
+	} else{
+		cursor_row--;
+		lcd_set_cursor(lcd, cursor_row, cursor_col);
+	}
 }
