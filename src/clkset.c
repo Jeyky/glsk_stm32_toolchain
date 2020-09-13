@@ -1,13 +1,13 @@
-/*#include <libopencm3/cm3/cortex.h>
-#include <libopencm3/cm3/nvic.h>
+#include <libopencm3/cm3/cortex.h>
+//#include <libopencm3/cm3/nvic.h>
 #include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/flash.h>
+//#include <libopencm3/stm32/flash.h>
 #include <libopencm3/stm32/pwr.h>
-*/
 #include "clkset.h"
 
 
-void clock_hse_init(uint32_t pllm, uint32_t plln, uint32_t pllp,uint32_t pllq,uint32_t pllr)
+//void clock_hse_init(uint32_t pllm, uint32_t plln, uint32_t pllp,uint32_t pllq,uint32_t pllr)
+void clock_hse_168MHZ_init(void)
 {
 
 	rcc_osc_bypass_enable(RCC_HSE);
@@ -22,8 +22,8 @@ void clock_hse_init(uint32_t pllm, uint32_t plln, uint32_t pllp,uint32_t pllq,ui
 
 	rcc_osc_off(RCC_PLL);
 
-	//rcc_set_main_pll_hse(4, 168, 2, 7, 0);
-	rcc_set_main_pll_hse(pllm, plln, pllp, pllq, pllr);
+	rcc_set_main_pll_hse(4, 168, 2, 7, 0);
+	//rcc_set_main_pll_hse(pllm, plln, pllp, pllq, pllr);
 
 	rcc_css_disable();
 	rcc_osc_on(RCC_PLL);
@@ -60,20 +60,3 @@ void clock_hse_init(uint32_t pllm, uint32_t plln, uint32_t pllp,uint32_t pllq,ui
 	// Disable internal 16 MHz RC oscillator (HSI)
 	rcc_osc_off(RCC_HSI);
 }
-
-/*
-int main(void)
-{
-	rcc_periph_clock_enable(RCC_GPIOD);
-	glsk_pins_init(true);
-	clock_hse_init(4, 168, 2, 7, 0);
-	abs_sys_tick_init(168000000ul/100000ul, 2);
-	sk_pin_set(sk_io_led_orange, true);
-	while(1){
-		abs_delay_ms(1000);
-		sk_pin_toggle(sk_io_led_orange);
-		sk_pin_toggle(sk_io_led_blue);
-	}
-
-}
-*/
