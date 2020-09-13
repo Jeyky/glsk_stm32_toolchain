@@ -7,6 +7,7 @@
 #include <libopencm3/stm32/gpio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <libopencm3/stm32/exti.h>
 
 
 /**
@@ -210,6 +211,8 @@ void sk_pin_set_af(sk_pin pin, uint8_t alt_func_num);
  * Access to the corresponding GPIO registers is not atomic.
  */
 void sk_pin_set_output_options(sk_pin pin, uint8_t otype, uint8_t speed);
+
+void sk_inter_exti_init(sk_pin pin, enum exti_trigger_type trigger);
 
 
 #if SK_USE_GLSK_DEFINITIONS
