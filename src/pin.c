@@ -115,8 +115,11 @@ void sk_pin_set_output_options(sk_pin pin, uint8_t otype, uint8_t speed)
 void sk_inter_exti_init(sk_pin pin, enum exti_trigger_type trigger)
 {
 	exti_select_source((1 << pin.pin), sk_pin_port_to_gpio(pin.port));
+
 	exti_set_trigger((1 << pin.pin), trigger);
+
 	exti_enable_request((1 << pin.pin));
+	
 	exti_reset_request((1 << pin.pin));
 }
 

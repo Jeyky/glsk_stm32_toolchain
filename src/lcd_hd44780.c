@@ -108,6 +108,7 @@ void lcd_send_cmd(struct sk_lcd *lcd, uint8_t byte)
 	lcd_rsrw_set(lcd, 0, 0);
 	lcd_data_set_halfbyte(lcd, byte >> 4);
 	lcd_data_set_halfbyte(lcd, byte & 0x0F);
+	lcd_delay_us(lcd, DELAY_CONTROL_US);
 }
 
 void lcd_send_data(struct sk_lcd *lcd, uint8_t byte)
@@ -117,12 +118,6 @@ void lcd_send_data(struct sk_lcd *lcd, uint8_t byte)
 	lcd_data_set_halfbyte(lcd, byte & 0x0F);
 }
 
-
-/*void lcd_send_byte(struct sk_lcd *lcd, bool rs, uint8_t byte)
-{
-	lcd_rsrw_set(lcd, rs, true);
-	lcd_data_set_byte(lcd, byte);
-}*/
 void lcd_add_symbol(struct sk_lcd *lcd, uint8_t position, uint8_t *symbol)
 {
 	if (position < 8){
@@ -151,7 +146,7 @@ void lcd_init_4bit(struct sk_lcd *lcd)
 
 	// set display on/off: bit2 -- display on (D), bit1 -- cursor on (C), bit 0 -- blink on (B)
 	lcd_rsrw_set(lcd, 0, 0);
-	lcd_data_set_byte(lcd, 0b00001000 | 0b100);
+	lcd_data_set_byte(lcd, 0b00001000 | 0b110);
 	lcd_delay_us(lcd, DELAY_CONTROL_US);
 
 	// clear display
@@ -172,7 +167,7 @@ void lcd_putchar(struct sk_lcd *lcd, const uint8_t sym)
 	lcd_data_set_halfbyte(lcd, sym & 0x0F);
 }
 
-void lcd_send_string(struct sk_lcd *lcd, const uint8_t *str)
+/*void lcd_send_string(struct sk_lcd *lcd, const uint8_t *str)
 {
 	uint8_t counter=0;
 	while(*str != '\0'){
@@ -194,7 +189,23 @@ void lcd_send_string(struct sk_lcd *lcd, const uint8_t *str)
 		str++;
 		counter++;
 	}
+}*/
+void lcd_send_string(struct sk_lcd *lcd, const uint8_t *str)
+{
+	while(*str != '\0'){
+		lcd_rsrw_set(lcd, true, false);
+		lcd_data_set_halfbyte(lcd, *str >> 4);
+		lcd_data_set_halfbyte(lcd, *str & 0x0F);		
+		str++;
+	}
 }
+
+void lcd_set_addr(struct sk_lcd *lcd, uint8_t addr)
+{
+	lcd_send_cmd(lcd, 0x80 | addr);
+	//lcd_delay_us(lcd, DELAY_CONTROL_US);
+}
+
 void lcd_set_cursor(struct sk_lcd *lcd, uint8_t row, uint8_t column)
 {
 	if (0 == row)
@@ -220,6 +231,7 @@ void lcd_increase_column_cursor(struct sk_lcd *lcd)
 		lcd_set_cursor(lcd, cursor_row, cursor_col);
 	}
 }
+
 void lcd_increase_row_cursor(struct sk_lcd *lcd)
 {
 	if (cursor_row == 0) {

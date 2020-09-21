@@ -53,6 +53,9 @@ void lcd_send_cmd(struct sk_lcd *lcd, uint8_t byte);
 void lcd_send_data(struct sk_lcd *lcd, uint8_t byte);
 void lcd_add_symbol(struct sk_lcd *lcd, uint8_t position, uint8_t *symbol);
 void lcd_set_cursor(struct sk_lcd *lcd, uint8_t raw, uint8_t column);
+
+void lcd_set_addr(struct sk_lcd *lcd, uint8_t addr);
+
 void lcd_init_4bit(struct sk_lcd *lcd);
 
 void lcd_increase_column_cursor(struct sk_lcd *lcd);
