@@ -57,7 +57,7 @@ void exti0_isr(void)
 
 void hcsr04_strobe_trig(void)
 {
-	delay_ms(60);
+	delay_ms(80);
 
 	sk_pin_set(trig, 1);
 

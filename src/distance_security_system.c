@@ -21,7 +21,7 @@ static inline void alarm_check(double distance)
 	(distance <= threshold ) ? alarm_on() : alarm_off();
 }
 
-void rotate_and_measure(struct sk_lcd *lcd)
+void rotate_and_measure_and_display(struct sk_lcd *lcd)
 {
 	double distance;
 
@@ -49,7 +49,23 @@ void rotate_and_measure(struct sk_lcd *lcd)
 
 		servo_rotate(i);
 
-		if (!rotation_status) return;
+		if (current_menu == rotation_menu) {
+			lcd_rotation_menu_handler(lcd);
+
+		} else if (current_menu == dashboard_menu) {
+			lcd_dashboard_menu_handler(lcd);
+		}
+
+		if(current_menu != next_menu){
+			current_menu = next_menu;
+			lcd_print_menu(lcd, current_menu);
+			return;
+		}
+
+		if (!rotation_status){
+			servo_rotate(90);
+			return;
+		} 
 	}
 
 
@@ -77,14 +93,119 @@ void rotate_and_measure(struct sk_lcd *lcd)
 
 		servo_rotate(i);
 
-		if (!rotation_status) return;
+		if (current_menu == rotation_menu) {
+			lcd_rotation_menu_handler(lcd);
+		} else if (current_menu == dashboard_menu) {
+			lcd_dashboard_menu_handler(lcd);
+		}
+
+		if(current_menu != next_menu){
+			current_menu = next_menu;
+			lcd_print_menu(lcd, current_menu);
+			return;
+		}
+
+		if (!rotation_status){
+			servo_rotate(90);
+			return;
+		} 
 	}
 
 	
 }
 
+void rotate_and_measure(struct sk_lcd *lcd)
+{
+	double distance;
 
-void measure(struct sk_lcd *lcd)
+	const uint8_t step = 5;
+
+
+	for(int i = 30; i <= 150;i += step) {
+
+		distance = hcsr04_get_distance();
+
+		alarm_check(distance);
+
+		if(dashboard_status) {
+
+			speedometer_set_speed((uint16_t) distance);
+		} else {
+
+			speedometer_set_speed(0);
+		}
+
+		servo_rotate(i);
+
+		/*if(btn_middle_status){
+			rotation_status = !rotation_status;
+			btn_middle_status = false;
+		}*/
+		if (current_menu == lock_menu) {
+			lcd_lock_menu_handler(lcd);
+		} else if (current_menu == dialog_menu) {
+			lcd_dialog_menu_handler(lcd);
+		}
+
+		if(current_menu != next_menu){
+			current_menu = next_menu;
+			lcd_print_menu(lcd, current_menu);
+			return;
+
+		}
+
+		if (!rotation_status){
+			servo_rotate(90);
+			return;
+		} 
+		
+	}
+
+	for(int i = 150; i >= 30;i -= step) {
+
+		distance = hcsr04_get_distance();
+
+		alarm_check(distance);
+
+		if(dashboard_status) {
+
+			speedometer_set_speed((uint16_t) distance);
+
+		} else {
+
+			speedometer_set_speed(0);
+
+		}
+
+		servo_rotate(i);
+
+		/*if(btn_middle_status){
+			rotation_status = !rotation_status;
+			btn_middle_status = false;
+		}*/
+		if (current_menu == lock_menu) {
+			lcd_lock_menu_handler(lcd);
+		} else if (current_menu == dialog_menu) {
+			lcd_dialog_menu_handler(lcd);
+		}
+
+		if(current_menu != next_menu){
+			current_menu = next_menu;
+			lcd_print_menu(lcd, current_menu);
+			return;
+	
+		}
+
+		if (!rotation_status){
+			servo_rotate(90);
+			return;
+		} 
+	}
+
+	
+}
+
+void measure_and_display(struct sk_lcd *lcd)
 {
 	double distance;
 
@@ -107,6 +228,27 @@ void measure(struct sk_lcd *lcd)
 
 	
 }
+
+void measure(void)
+{
+	double distance;
+
+	char buffer[20];
+
+	servo_rotate(90);
+	distance = hcsr04_get_distance();
+
+	alarm_check(distance);
+
+	if(dashboard_status) {
+		speedometer_set_speed((uint16_t) distance);
+	} else {
+		speedometer_set_speed(0);
+	}
+
+	
+}
+
 double get_speed_of_sound(void)
 {
 
@@ -155,7 +297,7 @@ int main(void)
 		.pin_rw = &sk_io_lcd_rw,
 		.pin_bkl = &sk_io_lcd_bkl,
 		//.set_backlight_func = &test_bkl_func,
-		.delay_func_us = NULL,
+		.delay_func_us = &delay_us,
 		//.delay_func_ms = &abs_delay_ms,
 		.delay_func_ms = &delay_ms,
 		.is4bitinterface = true
@@ -238,9 +380,9 @@ int main(void)
 				lcd_dashboard_menu_handler(&lcd);
 
 				if(rotation_status)
-					rotate_and_measure(&lcd);
+					rotate_and_measure_and_display(&lcd);
 				else 
-					measure(&lcd);
+					measure_and_display(&lcd);
 
 				break;
 
@@ -249,10 +391,29 @@ int main(void)
 				lcd_rotation_menu_handler(&lcd);
 
 				if(rotation_status)
+					rotate_and_measure_and_display(&lcd);
+				else 
+					measure_and_display(&lcd);
+				break; 
+
+			case dialog_menu:
+
+				lcd_dialog_menu_handler(&lcd);
+
+				if(rotation_status){
+					rotate_and_measure(&lcd);
+				}
+				else 
+					measure();
+				break; 
+
+			case lock_menu:
+				lcd_lock_menu_handler(&lcd);
+
+				if(rotation_status)
 					rotate_and_measure(&lcd);
 				else 
-					measure(&lcd);
-
+					measure();
 				break; 
 		}
 		if(current_menu != next_menu){

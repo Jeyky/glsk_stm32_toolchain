@@ -4,7 +4,9 @@ enum menus {
 	password_menu = 0,
 	info_menu = 1,
 	dashboard_menu = 2,
-	rotation_menu = 3
+	rotation_menu = 3,
+	dialog_menu = 4,
+	lock_menu = 5
 };
 
 typedef enum menus menus;

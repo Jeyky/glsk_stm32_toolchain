@@ -193,13 +193,13 @@ void alarm_init(void)
 void alarm_on(void)
 {
 	timer_set_oc_value(TIM5, TIM_OC2, 10);
-	//delay_ms(800);
+	delay_ms(800);
 
 }
 void sound_click(void)
 {
 	timer_set_oc_value(TIM5, TIM_OC2, 10);
-	delay_ms(50);
+	delay_ms(20);
 	timer_set_oc_value(TIM5, TIM_OC2, 0);
 }
 void alarm_off(void)
