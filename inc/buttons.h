@@ -1,4 +1,9 @@
-
+/**
+ * Set buttons on GLSK pins settings 
+ *
+ * Note:
+ * Also set exti triggers on buttons.
+ */
 void button_init(void);
 
 extern const sk_pin btn_right;

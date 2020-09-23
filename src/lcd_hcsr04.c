@@ -1,6 +1,4 @@
 #include "lcd_hd44780.h"
-//#include "tick.h"
-//#include "abs_systick.h"
 #include <libopencm3/cm3/cortex.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
@@ -15,112 +13,119 @@
 #include "stdio.h"
 #include <stddef.h>
 #include "printf.h"
+#include "dht11.h"
+#include "pwm.h"
 
 
 const sk_pin trig 	= {.port = SK_PORTA, .pin = 3, .isinverse = false};
-const sk_pin echo = {.port = SK_PORTA, .pin = 0, .isinverse = false};
-const sk_pin out = {.port = SK_PORTA, .pin = 1, .isinverse = false};
+const sk_pin echo = {.port = SK_PORTC, .pin = 0, .isinverse = false};
 
 const sk_pin led_blue 	= {.port = SK_PORTD, .pin = 15, .isinverse = false};
 
-static bool __rising_falling = false;
+bool show_on_speedometer = false;
+double speed_of_sound = 331.3;
 uint32_t counter = 0;
-uint32_t countt = 0;
+
+
+//void get_precise_distance(struct sk_lcd *lcd)
+double hcsr04_get_precise_distance(void)
+{
+	double distance[3] = {0.0};
+	double min_val;
+	//char buffer[20];
+	//lcd_set_cursor(lcd, 0, 0);
+	meas();
+	distance[0] = (counter * speed_of_sound / 10000) / 2;
+	min_val = distance[0];
+	//snprintf(buffer, sk_arr_len(buffer), "d=%.1f", (double)distance[i]);
+	//lcd_send_string(lcd, buffer);
+	for(int i =1; i < 3; i++) {
+		meas();
+		distance[i] = (counter * speed_of_sound / 10000) / 2;
+		if(min_val > distance[i])
+			min_val = distance[i];
+		//snprintf(buffer, sk_arr_len(buffer), "d=%.1f", (double)distance[i]);
+		//lcd_send_string(lcd, buffer);
+	}
+	return min_val;
+}
+
+double hcsr04_get_distance(void)
+{
+	meas();
+	double distance = (counter * speed_of_sound / 10000) / 2;
+
+	return distance;
+}
+
+void rotate_and_measure(struct sk_lcd *lcd)
+{
+	double distance;
+	char buffer[20];
+	for(int i = 0; i <= 180; i+= 5) {
+		distance = hcsr04_get_distance();
+		/*if(show_on_speedometer) {
+			speedometer_set_speed((uint16_t) distance);
+		}*/
+		snprintf(buffer, sk_arr_len(buffer), "dist=%.2f     ", (double)distance);
+		lcd_set_cursor(lcd, 1, 0);
+		lcd_send_string(lcd, buffer);
+		servo_rotate(i);
+	}
+	for(int i = 180; i >= 0;i-=5) {
+		distance = hcsr04_get_distance();
+		if(show_on_speedometer) {
+			speedometer_set_speed((uint16_t) distance);
+		}
+		snprintf(buffer, sk_arr_len(buffer), "dist=%.2f     ", (double)distance);
+		lcd_set_cursor(lcd, 1, 0);
+		lcd_send_string(lcd, buffer);
+		servo_rotate(i);
+	}
+}
 
 void sk_inter_exti_init(sk_pin pin, enum exti_trigger_type trigger)
 {
-	exti_select_source(EXTI0, sk_pin_port_to_gpio(pin.port));
-	exti_set_trigger(EXTI0, trigger);
-	exti_enable_request(EXTI0);
-	exti_reset_request(EXTI0);
+	exti_select_source((1 << pin.pin), sk_pin_port_to_gpio(pin.port));
+	exti_set_trigger((1 << pin.pin), trigger);
+	exti_enable_request((1 << pin.pin));
+	exti_reset_request((1 << pin.pin));
 }
-void test_trig_echo(void)
+
+
+void install_speed_of_sound(void)
 {
-	sk_pin_set(trig, 1);
-	delay_ms(800);
-	sk_pin_set(trig, 0);
+	uint8_t tempraure = dht11_read_temprature();
+	speed_of_sound = 331.3 + (0.59 * tempraure);
 }
 
 void exti0_isr(void) 
 {
-	/*
-	sk_pin_toggle(led_blue);
-	__rising_falling = !__rising_falling;
-	if (__rising_falling) {
-		timer_set_period(TIM5, 0xFFFFFFFF - 1);
-		timer_generate_event(TIM5, TIM_EGR_UG);
-		__dmb();	
-		timer_enable_counter(TIM5);
-	} else {
-		countt = TIM_CNT(TIM5);
-	}
-	exti_reset_request(EXTI0);*/
-	softdelay(200);
+	//softdelay(200);
 	if (sk_pin_read(echo)) {
 		sk_pin_set(led_blue, 1);
-		timer_set_period(TIM5, 0xFFFFFFFF - 1);
-		timer_generate_event(TIM5, TIM_EGR_UG);
+		timer_set_period(TIM2, 0xFFFFFFFF - 1);
+		timer_generate_event(TIM2, TIM_EGR_UG);
 		__dmb();	
-		timer_enable_counter(TIM5);
+		timer_enable_counter(TIM2);
 	} else {
 		sk_pin_set(led_blue, 0);
-		countt = TIM_CNT(TIM5);
+		counter = TIM_CNT(TIM2);
 	}
 	exti_reset_request(EXTI0);
 }
 
-void delay_uus(uint32_t us)
-{
-	if(!us)
-		return;
-	timer_set_period(TIM2, us);
-
-	timer_generate_event(TIM2, TIM_EGR_UG);
-
-	__dmb();	
-	timer_enable_counter(TIM2);
-	softdelay(10000);
-	counter = timer_get_counter(TIM2_CNT);
-	countt = TIM_CNT(TIM2);
-	__asm__ volatile ("wfi");
-}
-void delay_uss(uint32_t us)
-{
-	if(!us)
-		return;
-	timer_set_period(TIM5, us);
-
-	timer_generate_event(TIM5, TIM_EGR_UG);
-
-	__dmb();	
-	timer_enable_counter(TIM5);
-	//softdelay(10000);
-	delay_us(8);
-	//counter = timer_get_counter(TIM5_CNT);
-	//countt = TIM_CNT(TIM5);
-	counter = timer_get_counter(TIM5_CNT);
-	countt = TIM_CNT(TIM5);
-	__asm__ volatile ("wfi");
-	
-}
-
 void meas(void)
 {
-	//printf("in meas\n");
-	//uint32_t max_val = 1000000;
-	//sk_pin_set(out, 1);
 	delay_ms(60);
-	counter = 0;
-	delay_ms(1);
-	sk_pin_set(out, 1);
-	sk_pin_set(trig, 1);
-	delay_us(10);
-	sk_pin_set(out, 0);
-	sk_pin_set(trig, 0);
-	delay_us(1000);
-	//while(max_val--);
-	//return countt;
 
+	sk_pin_set(trig, 1);
+
+	delay_us(10);
+
+	sk_pin_set(trig, 0);
+
+	delay_us(1000);
 }
 
 
@@ -148,13 +153,18 @@ int main(void)
 	sk_pin_set(sk_io_led_orange, true);
 
 
-	clock_hse_init(4, 168, 2, 7, 0);
+	//clock_hse_init(4, 168, 2, 7, 0);
+	clock_hse_168MHZ_init();
 	timer_delay_init(84 - 1);
 	timer_init(84 - 1);
+	pwm_init();
+	servo_init();
+	speedometer_init();
+
 
 	sk_pin_mode_setup(echo, GPIO_MODE_INPUT, GPIO_PUPD_NONE);
 
-	sk_pin_mode_setup(out, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE);
+	//sk_pin_mode_setup(out, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE);
 	sk_pin_mode_setup(trig, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE);
 
 	sk_pin_mode_setup(led_blue, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE);
@@ -192,51 +202,65 @@ int main(void)
 	
 	lcd_init_4bit(&lcd);
 
-	char tmp[20], buffer[20];
-	//snprintf(tmp, sk_arr_len(tmp), "%5.1f", temp);
-	//snprintf(buffer, sk_arr_len(buffer), "T=%-5s°C A=%u", tmp, (unsigned int)adcval);
+	char buffer[20];
 
 	//delay_uss(1000);
 	meas();
 
-	double distance = (countt * 0.0343) / 2;
-	//snprintf(buffer, sk_arr_len(buffer), "cr=%u", (uint32_t)counter);
-	//lcd_send_string(&lcd, buffer);
-	snprintf(buffer, sk_arr_len(buffer), "ct=%d", (uint32_t)countt);
+	meas();
+
+	uint8_t tempraure = dht11_read_temprature();
+
+	double distance = (counter * speed_of_sound / 10000) / 2;
+
+	snprintf(buffer, sk_arr_len(buffer), "temp=%d", (uint8_t)tempraure);
 	lcd_set_cursor(&lcd, 0, 0);
 	lcd_send_string(&lcd, buffer);
-	snprintf(buffer, sk_arr_len(buffer), "ct=%.2f", (double)distance);
+	delay_ms(1500);
+	snprintf(buffer, sk_arr_len(buffer), "dist=%.2f     ", (double)distance);
 	lcd_set_cursor(&lcd, 1, 0);
 	lcd_send_string(&lcd, buffer);
-	//lcd_send_string(&lcd, "slava!");
-	//lcd_send_cmd(&lcd, 0xc0);
-	//lcd_send_string(&lcd, "ukraine");
-	//lcd_set_cursor(&lcd, 1, 0);
+
+	sk_pin_set(sk_io_led_red, 1);
+
+	//delay_ms(3000);
+	rotate_and_measure(&lcd);
+	/*servo_rotate(90);
+	sk_pin_toggle(sk_io_led_red);
+	delay_ms(800);
+	servo_rotate(0);
+	sk_pin_toggle(sk_io_led_red);
+	delay_ms(800);
+	servo_rotate(90);
+	sk_pin_toggle(sk_io_led_red);
+	delay_ms(800);
+	servo_rotate(180);
+	sk_pin_toggle(sk_io_led_red);
+	delay_ms(800);*/
+
+	/*for(int i = 0; i <= 180; i += 5) {
+		servo_rotate(i);
+		delay_ms(80);
+	}
+	for(int i = 180; i >= 0; i -= 5) {
+		servo_rotate(i);
+		delay_ms(80);
+	}*/
+	sk_pin_set(sk_io_led_red, 1);
+
+	//get_precise_distance(&lcd); 
 
     while (1) {
-		// dumb code for logic analyzer to test levels
-		sk_pin_set(sk_io_led_orange, false);
-		
-		
-		delay_ms(10);
-		//sk_pin_toggle(led_blue);
-		meas();
 
-		double distance = (countt * 0.0343) / 2;
-		__dmb();
-		snprintf(buffer, sk_arr_len(buffer), "ct=%d", (uint32_t)countt);
-		lcd_set_cursor(&lcd, 0, 0);
-		lcd_send_string(&lcd, buffer);
-		snprintf(buffer, sk_arr_len(buffer), "ct=%.2f", (double)distance);
+    	sk_pin_set(sk_io_led_orange, false);
+    	//distance = get_precise_distance();
+    	distance = hcsr04_get_distance();
+    	snprintf(buffer, sk_arr_len(buffer), "dis=%.2f    ", (double)distance);
+    	if((distance < 4.0) && distance > 1.0) sk_pin_toggle(sk_io_led_green);
 		lcd_set_cursor(&lcd, 1, 0);
 		lcd_send_string(&lcd, buffer);
-
+		//rotate_and_measure(&lcd);
 		sk_pin_set(sk_io_led_orange, true);
-		//lcd_send_byte(&lcd, true, 0b11111111);
-		delay_ms(10);
-    		
-		
-		//lcd_send_byte(&lcd, true, 0b10110100);
 
     }
 }

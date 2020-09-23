@@ -3,7 +3,7 @@ TARGET = distance_security_system
 # All source files go here:
 SRCS = $(TARGET).c
 # other sources added like that
-SRCS += pin.c timer_delay.c clkset.c lcd_hd44780.c printf.c pwm.c hcsr04.c dht11.c adc_temp.c buttons.c menu.c
+SRCS += pin.c timer_delay.c clkset.c lcd_hd44780.c printf.c pwm.c hcsr04.c dht11.c adc_temp.c buttons.c menu.c spi_flash.c
 # User defines
 DEFINES = GLSK_BOARD=1
 # The libs which are linked to the resulting target

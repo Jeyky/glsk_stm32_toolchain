@@ -199,7 +199,7 @@ void alarm_on(void)
 void sound_click(void)
 {
 	timer_set_oc_value(TIM5, TIM_OC2, 10);
-	delay_ms(20);
+	delay_ms(40);
 	timer_set_oc_value(TIM5, TIM_OC2, 0);
 }
 void alarm_off(void)

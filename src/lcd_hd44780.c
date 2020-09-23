@@ -3,19 +3,21 @@
 
 
 // Clear Display and Return Home commands
-static const uint32_t DELAY_CLRRET_US = 1530;
+//static const uint32_t DELAY_CLRRET_US = 1530;
+static const uint32_t DELAY_CLRRET_US = 1650;
 // Read Data from RAM and Write Data to RAM commands 
-static const uint32_t DELAY_READWRITE_US = 43;
+//static const uint32_t DELAY_READWRITE_US = 43;
+static const uint32_t DELAY_READWRITE_US = 50;
 // Read Busy Flag and Address command
-static const uint32_t DELAY_BUSYFLAG_US = 0;
+static const uint32_t DELAY_BUSYFLAG_US = 1000; //0
 // Entry Mode Set, Display ON/OFF Control, Cursor or Display Shift,
 // Function Set, Set CGRAM Address, Set DDRAM Address commands
-static const uint32_t DELAY_CONTROL_US = 39;
+static const uint32_t DELAY_CONTROL_US = 59;//39
 // TODO: ...
-static const uint32_t DELAY_ENA_STROBE_US = 1;
+static const uint32_t DELAY_ENA_STROBE_US = 50;	//1
 // ...
-static const uint32_t DELAY_INIT0_US = 4100;
-static const uint32_t DELAY_INIT1_US = 100;
+static const uint32_t DELAY_INIT0_US = 4100;	//4100
+static const uint32_t DELAY_INIT1_US = 800;	//100
 		   
 uint8_t cursor_col = 0;
 uint8_t cursor_row = 0;

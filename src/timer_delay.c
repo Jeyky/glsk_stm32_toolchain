@@ -85,18 +85,3 @@ void tim2_isr(void)
 	timer_clear_flag(TIM2, TIM_SR_UIF);
 }
 
-/*
-int main(void)
-{
-	rcc_periph_clock_enable(RCC_GPIOD);
-	gpio_mode_setup(GPIOD, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, GPIO12 | GPIO13 | GPIO14 | GPIO15);
-
-	timer_init(16 - 1);
-	cm_enable_interrupts();
-
-	while(1){
-		gpio_toggle(GPIOD, GPIO12 | GPIO13 | GPIO14 | GPIO15);
-		delay_ms(1000);
-	}
-
-}*/

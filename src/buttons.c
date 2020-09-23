@@ -80,10 +80,10 @@ void exti15_10_isr(void)
 	if (exti_get_flag_status(EXTI15)) {
 
 		if(sk_btn_debounce(btn_middle)) {
-			sk_pin_toggle(sk_io_led_blue);
-			sk_pin_toggle(sk_io_led_red);
-			sk_pin_toggle(sk_io_led_green);
-			sk_pin_toggle(sk_io_led_orange);
+			//sk_pin_toggle(sk_io_led_blue);
+			//sk_pin_toggle(sk_io_led_red);
+			//sk_pin_toggle(sk_io_led_green);
+			//sk_pin_toggle(sk_io_led_orange);
 			btn_middle_status = !btn_middle_status;
 		}
 		exti_reset_request((1 << btn_middle.pin));
@@ -92,7 +92,7 @@ void exti15_10_isr(void)
 	if(exti_get_flag_status(EXTI11)) {
 
 		if(sk_btn_debounce(btn_right)) {
-			sk_pin_toggle(sk_io_led_blue);
+			//sk_pin_toggle(sk_io_led_blue);
 			btn_right_status = !btn_right_status;
 		}
 		exti_reset_request((1 << btn_right.pin));
@@ -105,7 +105,7 @@ void exti9_5_isr(void)
 	
 	if (exti_get_flag_status(EXTI6)) {
 		if(sk_btn_debounce(btn_up)) {
-			sk_pin_toggle(sk_io_led_red);
+			//sk_pin_toggle(sk_io_led_red);
 			btn_up_status = !btn_up_status;
 		}
 		exti_reset_request((1 << btn_up.pin));
@@ -113,14 +113,14 @@ void exti9_5_isr(void)
 
 	if (exti_get_flag_status(EXTI8)) {
 		if(sk_btn_debounce(btn_down)) {
-			sk_pin_toggle(sk_io_led_green);
+			//sk_pin_toggle(sk_io_led_green);
 			btn_down_status = !btn_down_status;
 		}
 		exti_reset_request((1 << btn_down.pin));
 	}
 	if (exti_get_flag_status(EXTI9)) {
 		if(sk_btn_debounce(btn_left)) {
-			sk_pin_toggle(sk_io_led_orange);
+			//sk_pin_toggle(sk_io_led_orange);
 			btn_left_status = !btn_left_status;
 		}
 		exti_reset_request((1 << btn_left.pin));

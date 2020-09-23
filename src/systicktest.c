@@ -65,18 +65,14 @@ void sys_tick_handler(void)
 
 uint32_t get_tick_rate(void)
 {
-	uint32_t tick_rate = 0;
+	uint32_t tick_rate = rcc_ahb_frequency / systick_get_reload();
 	// CLKSOURCE:
 	// AHB/8 = 0
 	// processor clock (AHB) = 1	
-	//printf("rcc_ahb_frequency = %ld\n", rcc_ahb_frequency);
-	//printf("systick_get_reload = %ld\n", systick_get_reload());
-	if(STK_CSR & STK_CSR_CLKSOURCE) {
-		tick_rate = rcc_ahb_frequency / systick_get_reload();
-		//printf("IN IF tick_rate = %ld\n", tick_rate);
-	} else {
+	//printf("rcc_ahb_frequency = %d\n", rcc_ahb_frequency);
+	//printf("systick_get_reload = %d\n", systick_get_reload());
+	if(!(STK_CSR & STK_CSR_CLKSOURCE)) {
 		tick_rate = (rcc_ahb_frequency / 8) / systick_get_reload();
-		//printf("IN ELSE tick_rate = %ld\n", tick_rate);
 	}
 }
 
@@ -84,7 +80,7 @@ static void delay_ms_systick(uint32_t ms)
 {	
 	uint32_t current = get_current_tick();
 	uint32_t tick_rate = get_tick_rate();
-	//printf("TICK_RATE = %ld\n", tick_rate);
+	printf("tick_rate = %d\n", tick_rate);
 	uint32_t delta = (tick_rate / 1000)*ms;
 	
 	uint32_t next = current + delta;
@@ -102,7 +98,7 @@ static void delay_ms_systick(uint32_t ms)
 
 int main(void)
 {
-	//initialise_monitor_handles();
+	initialise_monitor_handles();
 	rcc_periph_clock_enable(RCC_GPIOD);
 
 	glsk_pins_init(true);
@@ -113,7 +109,7 @@ int main(void)
 	
 	while(1){
 		sk_pin_toggle(sk_io_led_green);
-		delay_ms_systick(10000);
+		delay_ms_systick(1000);
 	}
 
 }

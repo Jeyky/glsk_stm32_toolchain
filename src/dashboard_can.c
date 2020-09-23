@@ -46,7 +46,7 @@ void dashboard_can_init(void)
 
 	can_reset(CAN1);
 
-	if (can_init (CAN1, false, false, false, false, false, false, CAN_BTR_SJW_2TQ, CAN_BTR_TS1_12TQ, CAN_BTR_TS2_2TQ, 28, false, false))
+	if (can_init (CAN1, false, false, false, false, false, false, CAN_BTR_SJW_2TQ, CAN_BTR_TS1_12TQ, CAN_BTR_TS2_2TQ, 6, false, false))
 		sk_pin_set(sk_io_led_red, 1);
 	can_filter_id_mask_32bit_init(0, 0, 0, 0, true);
 	//can_enable_irq(CAN1, 3);
@@ -97,7 +97,7 @@ int main(void)
 	uint8_t stmp4[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 	dashboard_can_init();
-	res = can_transmit(CAN1, 0x316, false, false, 8, &stmp);
+	res = can_transmit(CAN1, 0x316, false, false, 8, stmp);
 
 	char buffer[20];
 	lcd_set_cursor(&lcd, 0, 0);
@@ -106,7 +106,7 @@ int main(void)
 
 	//delay_ms(200);
 
-	res = can_transmit(CAN1, 0x545, false, false, 8, &stmp2);
+	/*res = can_transmit(CAN1, 0x545, true, false, 8, &stmp2);
 
 	
 	lcd_set_cursor(&lcd, 0, 0);
@@ -118,7 +118,7 @@ int main(void)
 
 	delay_ms(200);
 
-	res = can_transmit(CAN1, 0x329, false, false, 8, &stmp3);
+	res = can_transmit(CAN1, 0x329, true, false, 8, &stmp3);
 
 
 	lcd_set_cursor(&lcd, 0, 0);
@@ -131,7 +131,7 @@ int main(void)
 
 	lcd_set_cursor(&lcd, 0, 0);
 	snprintf(buffer,sk_arr_len(buffer), "res=%d   ", res);
-	lcd_send_string(&lcd, buffer);
+	lcd_send_string(&lcd, buffer);*/
 	while(1) {
 
 	}

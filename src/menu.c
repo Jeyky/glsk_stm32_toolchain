@@ -12,6 +12,7 @@
 #include "stdint.h"
 #include "stddef.h"
 #include "pwm.h"
+#include "spi_flash.h"
 
 #define EMPTY_STR "                 "
 
@@ -19,7 +20,7 @@ menus next_menu = password_menu;
 
 menus current_menu = password_menu;
 
-uint8_t password[4]= {1, 2, 1, 2};
+uint8_t password[4];		//3 1 0 2
 
 uint8_t displayed_pass[4] = {0, 0, 0, 0};
 
@@ -44,9 +45,11 @@ void lcd_print_menu(struct sk_lcd *lcd, menus menu)
 {
 	char buffer[20];
 	switch(menu) {
-		case password_menu:	
+		case password_menu:
+			flash_get_threshold(&threshold);
+			flash_get_password(password);	
 			lcd_set_cursor(lcd, 0, 0);
-			lcd_send_string(lcd, "   password:    ");
+			lcd_send_string(lcd, "ENTER PASSWORD:");
 			lcd_set_cursor(lcd, 1, 0);
 			lcd_send_string(lcd, EMPTY_STR);
 			lcd_set_cursor(lcd, 1, 6);
@@ -63,7 +66,7 @@ void lcd_print_menu(struct sk_lcd *lcd, menus menu)
 		
 		case info_menu:
 			lcd_set_cursor(lcd, 0, 0);
-			snprintf(buffer, sk_arr_len(buffer), "speed=%.1f      ", sound_speed);
+			snprintf(buffer, sk_arr_len(buffer), "speed=%.1fm/s      ", sound_speed);
 			lcd_send_string(lcd, buffer);
 			lcd_set_cursor(lcd, 1, 0);
 			snprintf(buffer, sk_arr_len(buffer), "threshold:%d      ", threshold);
@@ -266,6 +269,7 @@ void lcd_password_menu_handler(struct sk_lcd *lcd)
 		else {
 			lcd_set_cursor(lcd, 0, 0);
 			lcd_send_string(lcd, "WRONG PASSWORD  ");
+			delay_ms(attempts*3000 + 1000);
 			set_zeros(displayed_pass, sk_arr_len(displayed_pass));
 			//displayed_pass[0] = 0;
 			//displayed_pass[1] = 0;
@@ -273,14 +277,16 @@ void lcd_password_menu_handler(struct sk_lcd *lcd)
 			//displayed_pass[3] = 0;
 
 			attempts++;
+			
 			if(attempts < 4) {
-				delay_ms(attempts*1 + 1000);
+				//delay_ms(attempts*1 + 1000);
 				lcd_print_menu(lcd, password_menu);
 			} else {
 				lcd_set_cursor(lcd, 0, 0);
 				lcd_send_string(lcd, "   ALARM ALARM  ");
 				alarm_on();
 			}
+			
 		}
 
 		sound_click();
@@ -577,56 +583,3 @@ void lcd_lock_menu_handler(struct sk_lcd *lcd)
 	
 	lcd_set_cursor(lcd, cursor_row, cursor_col);
 }
-
-
-/*
-int main(void)
-{
-	
-	rcc_periph_clock_enable(RCC_GPIOA);
-	rcc_periph_clock_enable(RCC_GPIOB);
-	rcc_periph_clock_enable(RCC_GPIOC);
-	rcc_periph_clock_enable(RCC_GPIOD);
-	rcc_periph_clock_enable(RCC_GPIOE);
-
-	char buffer[20];
-
-	clock_hse_168MHZ_init();
-	timer_delay_init(84 - 1);
-	glsk_pins_init(false);
-	sk_lcd_set_backlight(&lcd, 0xFF);
-	
-	for (int i = 0; i < 5; i++)
-		lcd_init_4bit(&lcd);
-	button_init();
-	lcd_set_cursor(&lcd, 0, 0);
-	lcd_send_string(&lcd, "k3k");
-
-	lcd_set_addr(&lcd, 0x40);
-	lcd_send_string(&lcd, "k0k3");
-	delay_ms(800);
-	lcd_print_menu(&lcd, password_menu);
-	//lcd_print_menu(&lcd, "hello", "my honney");
-	
-	while(1) {
-		if(current_menu == password_menu) {
-			lcd_password_handler(&lcd);
-		} else {
-			lcd_btn_handler(&lcd);
-			//lcd_set_cursor(&lcd, 1, 0);
-			//snprintf(buffer, sk_arr_len(buffer),"menu=%d", %current_menu);
-			//lcd_send_string(&lcd, buffer);
-		}
-		
-
-		if(current_menu != next_menu){
-			current_menu = next_menu;
-			lcd_print_menu(&lcd, current_menu);
-			
-
-		}
-
-
-	}
-}
-*/

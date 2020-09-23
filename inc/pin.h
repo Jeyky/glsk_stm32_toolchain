@@ -212,6 +212,14 @@ void sk_pin_set_af(sk_pin pin, uint8_t alt_func_num);
  */
 void sk_pin_set_output_options(sk_pin pin, uint8_t otype, uint8_t speed);
 
+/**
+ * Set external interrupt on sk_pin 
+ * @pin: pin structure (:c:type:`sk_pin`)
+ * @trigger: set mode of exti to occur on rising, falling or both edges
+ *
+ * Note:
+ * Access to the corresponding GPIO registers is not atomic.
+ */
 void sk_inter_exti_init(sk_pin pin, enum exti_trigger_type trigger);
 
 
