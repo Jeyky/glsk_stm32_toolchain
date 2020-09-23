@@ -52,6 +52,9 @@ static void lcd_print_distance(struct sk_lcd *lcd, double distance)
  */
 void lcd_distance_visibility(struct sk_lcd *lcd, double distance) {
 	switch (current_menu) {
+			case password_menu:
+				lcd_password_menu_handler(lcd);
+				break;
 			case info_menu:
 				lcd_info_menu_handler(lcd);
 				break;
@@ -302,6 +305,7 @@ int main(void)
 			case password_menu:
 
 				lcd_password_menu_handler(&lcd);
+				measure(&lcd);
 				break;
 
 			case info_menu:
