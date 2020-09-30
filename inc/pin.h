@@ -244,6 +244,8 @@ extern const sk_pin sk_io_lcd_en;
 
 extern const sk_pin_group sk_io_lcd_data;
 
+extern const sk_pin sk_dht11;
+
 
 #if !(SK_USE_SIZE_OPTIMIZATIONS)
 void glsk_pins_init(const bool set_all);

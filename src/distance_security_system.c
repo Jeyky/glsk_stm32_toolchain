@@ -189,21 +189,21 @@ void measure(struct sk_lcd *lcd)
  * Measures temrature and sets sound speed with certain formula
  * ADC temp used if dht11 does not respond.
  */
-double get_speed_of_sound(void)
+double get_speed_of_sound(struct sk_dht11 *dht11)
 {
 
 
 	uint8_t temprature;
 
-	dht11_start();
+	dht11_start(dht11);
 
-	if (dht11_response()) {
+	if (dht11_response(dht11)) {
 
-		dht11_read_byte();
-		dht11_read_byte();
-		temprature = dht11_read_byte();
-		dht11_read_byte();
-		dht11_read_byte();
+		dht11_read_byte(dht11);
+		dht11_read_byte(dht11);
+		temprature = dht11_read_byte(dht11);
+		dht11_read_byte(dht11);
+		dht11_read_byte(dht11);
 	} else {
 		temprature = adc_get_temp();
 	}
@@ -239,6 +239,12 @@ int main(void)
 		//.delay_func_ms = &abs_delay_ms,
 		.delay_func_ms = &delay_ms,
 		.is4bitinterface = true
+	};
+
+	struct sk_dht11 dht11 = {
+		.data_pin = &sk_dht11,
+		.delay_func_ms = &delay_ms,
+		.delay_func_us = &delay_us
 	};
 
 	sk_lcd_set_backlight(&lcd, 0xFF);
@@ -282,7 +288,7 @@ int main(void)
 
 	float temp = adc_get_temp();
 
-	sound_speed = get_speed_of_sound();
+	sound_speed = get_speed_of_sound(&dht11);
 
 	//snprintf(buffer, sk_arr_len(buffer), "speed=%.2f", (double)speed_of_sound);
 	//lcd_set_cursor(&lcd, 1, 0);

@@ -141,6 +141,7 @@ const sk_pin sk_io_lcd_bkl    = { .port=SK_PORTE, .pin=9,  .isinverse=false };
 const sk_pin sk_io_lcd_rs     = { .port=SK_PORTE, .pin=7,  .isinverse=false };
 const sk_pin sk_io_lcd_rw     = { .port=SK_PORTE, .pin=10, .isinverse=false };
 const sk_pin sk_io_lcd_en     = { .port=SK_PORTE, .pin=11, .isinverse=false };
+const sk_pin sk_dht11 		  = { .port=SK_PORTD, .pin=11, .isinverse=false };
 // GL-SK LCD 4-bit data interface pin group
 const sk_pin_group sk_io_lcd_data = {
 	.port = SK_PORTE,
