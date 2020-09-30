@@ -214,9 +214,13 @@ double get_speed_of_sound(struct sk_dht11 *dht11)
 
 int main(void)
 {
-	rcc_periph_clock_enable(RCC_GPIOE);
-	rcc_periph_clock_enable(RCC_GPIOD);
 	
+	
+	rcc_periph_clock_enable(RCC_GPIOA);
+	rcc_periph_clock_enable(RCC_GPIOB);
+	rcc_periph_clock_enable(RCC_GPIOC);
+	rcc_periph_clock_enable(RCC_GPIOD);
+	rcc_periph_clock_enable(RCC_GPIOE);
 
 	glsk_pins_init(false);
 
