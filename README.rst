@@ -5,9 +5,10 @@ Distance security system
 About the project
 ************
 A distance security system designed for scanning enclosed spaces. 
-System alarms in case someone crossed the measurement axis and the measured distance is below the threshold. The system based on the GLobalLogic starter kit. User menus and lock/unlock menus implemented with LCD and 5 buttons from the board. In the menu, the user can see measured distance, change threshold distance, rotate the distance sensor, and enable/disable output of measured distance to the speedometer of the BMW E46 dashboard. Default threshold value saved in flash memory. Ambient temperature affects the speed of sound, so to make distance measurement more precise device uses dht11 and lm335 temperature sensors. DHT11 is the main temperature sensor, lm335 uses in case DHT11 doesn't respond. Alarm imitated by speaker controlled with PWM 1kHz signal.
+System alarms in case someone crossed the measurement axis and the measured distance is below the threshold. The system based on the GLobalLogic starter kit. User menus and lock/unlock menus implemented with LCD and 5 buttons from the board. In the menu, the user can see measured distance, change threshold distance, rotate the distance sensor, and enable/disable output of measured distance to the speedometer of the BMW E46 dashboard. Default threshold value saved in flash memory. Ambient temperature affects the speed of sound, so to make distance measurement more precise device uses dht11 and lm335 temperature sensors. DHT11 is the main temperature sensor, lm335 uses in case DHT11 doesn't respond. Alarm imitated by speaker controlled with PWM 1kHz signal. For this project was used stm32f407 but it can be implemented on stm32f1 series.
 List of used sensors, devices:
 
+* STM32F407
 * LCD hd44780
 * HC-SR04 distance sensor
 * SG90 servo motor
@@ -15,6 +16,14 @@ List of used sensors, devices:
 * DHT11 temperature sensor
 * LM335  temperature sensor
 * BMW E46 dashboard
+
+Build
+************
+.. code-block:: shell-session
+
+   make PROFILE=relesae target flash
+
+All needed files in the PROJECT folder, so if you need them you can move src, inc, and makefile to the root of the repository and build
 
 Requirements
 ************
