@@ -20,7 +20,8 @@ extern bool rotate;
  * Servo frequensy is 50Hz and duty cycle from 0.5 to 2.5 milliseconds. Alarm frequency
  * is 1kHz. Dashboard speedometer frequency depends on desired value on scale (6.7Hz per 1kmph).
  */
-void pwm_init(void);
+//void pwm_init(void);
+void pwm_init(uint32_t tim, enum rcc_periph_clken rcc_tim, enum tim_oc_id oc, uint32_t prescaler, uint32_t period);
 /**
  * Set servo motor pin settings 
  *

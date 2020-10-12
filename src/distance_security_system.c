@@ -260,8 +260,6 @@ int main(void)
 
 	hcsr04_inint();
 
-	pwm_init();
-
 	servo_init();
 
 	speedometer_init();
