@@ -17,6 +17,9 @@ List of used sensors, devices:
 * LM335  temperature sensor
 * BMW E46 dashboard
 
+`Video of the project <https://youtu.be/HSYbfxGLGHc>`_ 
+************
+
 Build
 ************
 .. code-block:: shell-session
