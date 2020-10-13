@@ -35,8 +35,6 @@ In docs directory:
 
    make clean html
 
-All needed files in the PROJECT folder, so if you need them you can move src, inc, and makefile to the root of the repository and build
-
 Requirements
 ************
 
