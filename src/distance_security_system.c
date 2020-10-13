@@ -1,15 +1,14 @@
 #include <libopencm3/cm3/cortex.h>
 #include <libopencm3/stm32/rcc.h>
-
-#include "lcd_hd44780.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include "pin.h"
 #include "timer_delay.h"
 #include "clkset.h"
 #include "stdio.h"
-#include <stddef.h>
 #include "printf.h"
+#include "lcd_hd44780.h"
 #include "dht11.h"
 #include "pwm.h"
 #include "hcsr04.h"
@@ -274,36 +273,13 @@ int main(void)
 	char buffer[20];
 
 	servo_rotate(90);
-
-	//sk_pin_set(sk_io_led_red, true);
-	//speedometer_set_speed(60);
-
-	
-	//sk_pin_set(sk_io_led_orange, false);
-	//sk_pin_set(sk_io_led_blue, true);
-
-	//lcd_set_cursor(&lcd, 0, 0);
-
-	//lcd_send_string(&lcd, "pnl:    thd:");
-
 	
 
 	float temp = adc_get_temp();
 
 	sound_speed = get_speed_of_sound(&dht11);
 
-	//snprintf(buffer, sk_arr_len(buffer), "speed=%.2f", (double)speed_of_sound);
-	//lcd_set_cursor(&lcd, 1, 0);
-	//lcd_send_string(&lcd, buffer);
-
 	double distance = hcsr04_get_distance();
-
-	//double current, prev;
-
-	//prev = hcsr04_get_distance();
-	//uint32_t tmp;
-	
-	//delay_ms(800);
 
 	lcd_print_menu(&lcd, password_menu);
 

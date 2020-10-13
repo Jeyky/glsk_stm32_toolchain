@@ -39,7 +39,7 @@ extern bool rotation_status;
  */
 void lcd_print_menu(struct sk_lcd *lcd, menus menu);
 
-void lcd_btn_menu_handler(struct sk_lcd *lcd);
+//void lcd_btn_menu_handler(struct sk_lcd *lcd);
 
 /**
  * Gives ability to use buttons in password menu

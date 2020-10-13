@@ -1,0 +1,7 @@
+High lever abstraction over lcd hd44780
+=======================================
+
+More info to appear here...
+
+.. c:autodoc:: inc/lcd_hd44780.h src/lcd_hd44780.c
+   :clang: -I/lib/clang/10.0.0/include, -I/inc, -std=gnu17, -DHAWKMOTH

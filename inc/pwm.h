@@ -13,28 +13,32 @@ extern bool rotate;
 //extern double threshold;
 
 /**
- * set pwm settings for speedometer, speaker and servo motor 
+ * Inits PWM output on certain channel
+ * @tim: Timer register address base
+ * @rcc_tim: rcc_periph_clken timer RCC
+ * @oc: enum tim_oc_id OC channel designators TIM_OCx where x=1..4, TIM_OCxN where x=1..3 (no action taken)
+ * @prescaler: Prescaler values 0...0xFFFF.
+ * @period: Period in counter clock ticks.
  *
  * Note:
- * Uses 3 timers(TIM3, TIM5, TIM9) for different purposes and we cannot have the same settings for all this stuff.
- * Servo frequensy is 50Hz and duty cycle from 0.5 to 2.5 milliseconds. Alarm frequency
- * is 1kHz. Dashboard speedometer frequency depends on desired value on scale (6.7Hz per 1kmph).
+ * This function allows to init only one PW< channel at once
  */
 //void pwm_init(void);
 void pwm_init(uint32_t tim, enum rcc_periph_clken rcc_tim, enum tim_oc_id oc, uint32_t prescaler, uint32_t period);
+
 /**
- * Set servo motor pin settings 
+ * Setup servo motor PWM and pin settings 
  *
  * Note:
- * Set output options and alternative functions for servo.
+ * No ability to change pins and timers, pins and timers are chosen strictly.
  */
 void servo_init(void);
 
 /**
- * Set dashboard speedometer pin settings 
+ * Setup speedometer PWM and pin settings 
  *
  * Note:
- * Set output options and alternative functions for speedometer
+ * No ability to change pins and timers, pins and timers are chosen strictly.
  */
 void speedometer_init(void);
 
@@ -57,10 +61,10 @@ void speedometer_set_speed(uint16_t value);
 void servo_rotate(uint16_t deg);
 
 /**
- * Set alarm speaker pin settings
+ * Setup alarm PWM and pin settings 
  *
  * Note:
- * Set output options and alternative functions for alarm speaker
+ * No ability to change pins and timers, pins and timers are chosen strictly.
  */
 void alarm_init(void);
 
@@ -81,6 +85,6 @@ void alarm_off(void);
  * sends pwm signal on speaker for 20 milliseconds.
  *
  * Note:
- * Useswhen buttons are clicked.
+ * Uses when buttons are clicked.
  */
 void sound_click(void);

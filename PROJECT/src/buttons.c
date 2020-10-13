@@ -38,8 +38,8 @@ void button_init(void)
 
 	scb_set_priority_grouping(SCB_AIRCR_PRIGROUP_GROUP4_SUB4);
 
-	const uint8_t group = 2;
-	const uint8_t subgroup = 0;
+	const uint8_t group = 4;
+	const uint8_t subgroup = 1;
 
 	nvic_set_priority(NVIC_EXTI9_5_IRQ, 	(group << 2) | subgroup);
 	nvic_set_priority(NVIC_EXTI15_10_IRQ, 	((1 + group) << 2) | subgroup);

@@ -8,5 +8,12 @@
 */
 
 
-//void clock_hse_init(uint32_t pllm, uint32_t plln, uint32_t pllp,uint32_t pllq,uint32_t pllr);
+/**
+ * Setup clock on 168MHz 
+ * @lcd:  structure of certain display pins.
+ * @level: desired level of display background brightness. 
+ *
+ * Note:
+ * clocks from HSE, APB1=42MHz, APB2=84MHz. HSI diseables.
+ */
 void clock_hse_168MHZ_init(void);

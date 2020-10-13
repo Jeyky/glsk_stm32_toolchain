@@ -57,7 +57,7 @@ void exti0_isr(void)
 
 void hcsr04_strobe_trig(void)
 {
-	delay_ms(80);
+	delay_ms(50);
 
 	sk_pin_set(trig, 1);
 
@@ -74,8 +74,8 @@ double hcsr04_get_distance(void)
 
 	double distance = (counter * speed_of_sound / 10000) / 2;
 
-	if(distance > 240.0) {
-		distance = 240.0;
+	if(distance > 400.0) {
+		distance = 400.0;
 	}
 	return distance;
 }

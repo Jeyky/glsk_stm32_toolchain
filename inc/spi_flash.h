@@ -1,5 +1,6 @@
 #include <libopencm3/stm32/spi.h>
 
+
 void spi_init(void);
 uint8_t flash_read_status_register(uint32_t spi);
 uint16_t flash_read_id(uint32_t spi);

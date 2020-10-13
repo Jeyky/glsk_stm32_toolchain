@@ -1,11 +1,6 @@
-/**
- * libsk GL-SK on-board LCD abstraction layer
- *
- * The display is WH1602B (based on HD44780 controller)
- */
 
 #include "errors.h"
-#include "pin.h"
+
 #include <stdint.h>
 
 

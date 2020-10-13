@@ -1,3 +1,4 @@
+#include "pin.h"
 #include "lcd_hd44780.h"
 #include <stddef.h>
 
