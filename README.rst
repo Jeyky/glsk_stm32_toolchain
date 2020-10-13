@@ -1,6 +1,32 @@
 #################################
-GlobalLogic Starter Kit resources
+Distance security system
 #################################
+
+About the project
+************
+A distance security system designed for scanning closed rooms. 
+System alarms in case someone crossed the measurement axis and the measured distance is below the threshold. The system based on the GLobalLogic starter kit. User menus and lock/unlock menus implemented with LCD and 5 buttons from the board. In the menu, the user can see measured distance, change threshold distance, rotate the distance sensor, and enable/disable output of measured distance to the speedometer of the BMW E46 dashboard. Default threshold value saved in flash memory. Ambient temperature affects the speed of sound, so to make distance measurement more precise device uses dht11 and lm335 temperature sensors. DHT11 is the main temperature sensor, lm335 uses in case DHT11 doesn't respond. Alarm imitated by speaker controlled with PWM 1kHz signal. For this project was used stm32f407 but it can be implemented on stm32f1 series.
+List of used sensors, devices:
+
+* STM32F407
+* LCD hd44780
+* HC-SR04 distance sensor
+* SG90 servo motor
+* Speaker
+* DHT11 temperature sensor
+* LM335  temperature sensor
+* BMW E46 dashboard
+
+`Video of the project <https://youtu.be/HSYbfxGLGHc>`_ 
+************
+
+Build
+************
+.. code-block:: shell-session
+
+   make PROFILE=relesae target flash
+
+All needed files in the PROJECT folder, so if you need them you can move src, inc, and makefile to the root of the repository and build
 
 Requirements
 ************
@@ -58,51 +84,6 @@ Install all packages:
    You need to either run ``sudo udevadm control --reload-rules`` and ``sudo udevadm trigger``
    or to reboot after installing OpenOCD for udev rules to start working
 
-Documentation
-*************
-
-.. list-table:: Documents listed `here <documentation/>`_:
-   :align: left
-   :widths: 20 80
-   :header-rows: 0
-   
-   * - `STM32F407 Reference Manual <documentation/STM32F407_Reference_Manual_(RM0090).pdf>`_
-     - Main document on the whole STM32F4 family and its peripherals.
-   * - `STM32 Cortex-M4 MCUs and MPUs Programming Manual <documentation/STM32_Cortex-M4_Programming_Manual_(PM0214).pdf>`_
-     - Describes features specific to Cortex-M4 core and core-related peripherals
-       (Interrupt Controller, Floating-Point Unit, ...).
-   * - `STM32F407 Datasheet <documentation/STM32F407_Datasheet_(DS8626).pdf>`_
-     - Datasheet describes specific features of concrete STM32F4 MCU
-       (memory size, pinout, available peripherals, ...).
-   * - `STM32F40x Errata <documentation/STM32F40x_Errata_(ES0182).pdf>`_
-     - Chips usually have errors due to design mistakes. Errors are described and Erratas and are
-       being fixed in later silicon revisions. 
-       If something should work, but it does not – check errata as you may be dealing with an old
-       chip revision.
-   * - `STM32F4DISCOVERY User Manual <documentation/STM32F4DISCOVERY_User_Manual_(UM1472).pdf>`_
-     - Document provides information on STM32F4DISCOVERY board and serves as a good quick
-       reference on how to use one or another board peripheral, which is faster and easier than
-       directly looking into board schematic.
-   * - `STM32F4DISCOVERY Schematic <documentation/STM32F4DISCOVERY_Schematic.pdf>`_
-     - Sometimes you will need to look in the schematic, in cases when the User Manual
-       does not provide enough information.
-   * - `GlobalLogic Starter Kit Schematic <documentation/GL-StarterKit_Schematic_rev1.1.pdf>`_
-     - GL-SK kit consists of two boards. This document is the main source of information on
-       external modules the GL-SK board has.
-
-
-Useful links
-************
-
-- `libopencm3 Developer Documentation
-  <http://libopencm3.org/docs/latest/stm32f4/html/modules.html>`_
-  or build it yourself (``make TARGETS=stm32/f4 lib html`` inside libopencm3 folder)
-- `STM32F407VG STMicroelectronics Resources page
-  <https://www.st.com/en/microcontrollers-microprocessors/stm32f407vg.html#resource>`_
-- `STM32F4DISCOVERY STMicroelectronics Resources page
-  <https://www.st.com/content/st_com/en/products/evaluation-tools/product-evaluation-tools/mcu-mpu-eval-tools/stm32-mcu-mpu-eval-tools/stm32-discovery-kits/stm32f4discovery.html#resource>`_
-
-
 How to start
 ************
 #. Make sure you have completed the installation steps described in Requirements_ first.
@@ -134,7 +115,3 @@ License
 | For more on STMicroelectronics documentation licensing consider their official website
   (`<https://st.com>`_)
 
-Contact information
-*******************
-Should you have questions, feel free to contact me via Telegram
-(`@thodnev <https://t.me/thodnev>`_) or e-mail (thodnev <at> xinity.dev)
